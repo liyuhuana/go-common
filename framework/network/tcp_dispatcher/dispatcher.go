@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-type DispatchFunc func(*network_tcp.Session, definition.PlayerId, []byte) []byte
+type DispatchFunc func(*network_tcp.Session, int32, definition.PlayerId, []byte) []byte
 
 type Dispatcher struct {
 	mux sync.Mutex
@@ -60,6 +60,6 @@ func (d *Dispatcher) onMessage(session *network_tcp.Session, msgId int32, msgDat
 	}
 
 	rspMsgId := d.nMsgIdMap[msgId]
-	rspData := d.nDispatchFunc(session, playerId, msgData)
+	rspData := d.nDispatchFunc(session, msgId, playerId, msgData)
 	return rspMsgId, rspData
 }

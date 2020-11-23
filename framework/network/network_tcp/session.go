@@ -1,0 +1,333 @@
+package network_tcp
+
+import (
+	"bufio"
+	"bytes"
+	"encoding/binary"
+	"fmt"
+	"net"
+	"sync"
+	"time"
+
+	"go.uber.org/atomic"
+
+	"github.com/liyuhuana/go-common/common_logger"
+	"github.com/liyuhuana/go-common/definition"
+	"github.com/liyuhuana/go-common/recover"
+)
+
+type Session struct {
+	id     int32
+	conn   net.Conn
+	server *Server
+
+	bodyLen uint16
+	closed  atomic.Int32 // 0:open 1:closed
+	rspTime atomic.Int64
+
+	reqSeed int32
+	reqPool sync.Map
+}
+
+func newSession(id int32, server *Server, conn net.Conn) *Session {
+	s := &Session{
+		id:      id,
+		server:  server,
+		conn:    conn,
+		closed:  *atomic.NewInt32(0),
+		rspTime: *atomic.NewInt64(time.Now().Unix()),
+	}
+	return s
+}
+
+func (this *Session) ID() int32 {
+	return this.id
+}
+
+func (this *Session) GetRemoteIp() string {
+	return this.conn.RemoteAddr().String()
+}
+
+func (this *Session) GetServer() *Server {
+	return this.server
+}
+
+func (this *Session) Start() {
+	common_logger.LogInfo("session connection established. sessionID:", this.ID())
+
+	this.GetServer().OnOpen(this)
+
+	go this.scan()
+}
+
+func (this *Session) scan() {
+	defer recover.Recover()
+
+	input := bufio.NewScanner(this.conn)
+	input.Split(this.split)
+
+	for input.Scan() {
+
+	}
+}
+
+func (this *Session) split(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	dataLen := len(data)
+	offset := 0
+	if dataLen == 0 {
+		return 0, nil, nil
+	}
+
+	if atEOF {
+		return dataLen, nil, nil
+	}
+
+	if this.bodyLen == 0 {
+		if dataLen < 2 {
+			return 0, nil, nil
+		}
+
+		this.bodyLen = binary.LittleEndian.Uint16(data[offset:2])
+		dataLen -= 2
+		offset += 2
+
+		if dataLen < int(this.bodyLen) {
+			return 2, nil, nil
+		}
+	} else if dataLen < int(this.bodyLen) {
+		return 0, nil, nil
+	}
+	advance = int(this.bodyLen) + offset
+	this.bodyLen = 0
+	return advance, data[offset:advance], nil
+}
+
+func (this *Session) dispatch(data []byte) {
+	this.rspTime.Store(time.Now().Unix())
+
+	if len(data) < 2 {
+		return
+	}
+
+	reader := bytes.NewBuffer(data)
+	_, err := reader.ReadByte() // first byte is length of buffer data
+	if err != nil {
+		this.Close(false)
+		common_logger.LogError(err)
+		return
+	}
+
+	pattern, err := reader.ReadByte()
+	if err != nil {
+		this.Close(false)
+		common_logger.LogError(err)
+		return
+	}
+
+	MonitorInst().IncrRead(1)
+
+	left := len(data) - 2
+	switch Pattern(pattern) {
+	case Push:
+		this.onPush(reader, left)
+	case Request:
+		this.onRequest(reader, left)
+	case Response:
+		this.onResponse(reader, left)
+	case Ping:
+		this.onPing(reader)
+	case Pong:
+		this.onPong(reader)
+	case Sub:
+	case Unsub:
+	case Pub:
+	}
+}
+
+func (this *Session) onPush(reader *bytes.Buffer, left int) {
+	var msgId uint32
+	err := binary.Read(reader, binary.LittleEndian, &msgId)
+	if err != nil {
+		common_logger.LogError(err)
+		this.Close(false)
+		return
+	}
+
+	left -= 2
+	body := make([]byte, left)
+	n, err := reader.Read(body)
+	if n != left || err != nil {
+		this.Close(false)
+		common_logger.LogError("session onPush exception, readByteLength:", n, "leftBuffLength:", left, "error:", err)
+		return
+	}
+
+	this.server.OnPush(this, msgId, body)
+}
+
+func (this *Session) onRequest(reader *bytes.Buffer, left int) {
+	var msgId uint32
+	err := binary.Read(reader, binary.LittleEndian, &msgId)
+	if err != nil {
+		common_logger.LogError(err)
+		this.Close(false)
+		return
+	}
+
+	left -= definition.UInt32ByteLen.Int()
+	body := make([]byte, left)
+	n, err := reader.Read(body)
+	if n != left || err != nil {
+		this.Close(false)
+		common_logger.LogError("session onRequest exception, readByteLength:", n, "leftBuffLength:", left, "error:", err)
+		return
+	}
+
+	this.server.OnRequest(this, msgId, body)
+}
+
+func (this *Session) onResponse(reader *bytes.Buffer, left int) {
+	var serial uint16
+	var en int16
+	err := binary.Read(reader, binary.LittleEndian, &serial)
+	if err != nil {
+		common_logger.LogError(err)
+		this.Close(false)
+		return
+	}
+
+	left -= 2
+	err = binary.Read(reader, binary.LittleEndian, &en)
+	if err != nil {
+		common_logger.LogError(err)
+		this.Close(false)
+		return
+	}
+
+	left -= 2
+	body := make([]byte, left)
+	n, err := reader.Read(body)
+	if n != left || err != nil {
+		this.Close(false)
+		common_logger.LogError("session onResponse exception, readByteLength:", n, "leftBuffLength:", left, "error:", err)
+		return
+	}
+}
+
+func (this *Session) onPing(reader *bytes.Buffer) {
+	serial, err := reader.ReadByte()
+	if err != nil {
+		this.Close(false)
+		common_logger.LogError(err)
+		return
+	}
+
+	err = this.pong(serial)
+	if err != nil {
+		common_logger.LogError(err)
+	}
+}
+
+func (this *Session) onPong(reader *bytes.Buffer) {
+
+}
+
+func (this *Session) Write(data []byte) error {
+	if this.IsClosed() {
+		return fmt.Errorf("session %d already closed", this.ID())
+	}
+
+	writeTimeout := time.Second * 3
+	err := this.conn.SetWriteDeadline(time.Now().Add(writeTimeout))
+	if err != nil {
+		this.Close(false)
+		return err
+	}
+
+	n, err := this.conn.Write(data)
+	dataLen := len(data)
+	if n != dataLen {
+		return fmt.Errorf("session write error => write:%d expected:%d", n, dataLen)
+	}
+	if err != nil {
+		this.Close(false)
+		return err
+	}
+
+	MonitorInst().IncrWrite(1)
+	return err
+}
+
+func (this *Session) Response(msgId uint32, msgData []byte) {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, uint32(1+definition.UInt32ByteLen.Int()+len(msgData)))
+	if err != nil {
+		common_logger.LogError("Session response error:", err)
+		return
+	}
+
+	buf.WriteByte(byte(Response))
+	err = binary.Write(buf, binary.LittleEndian, msgId)
+	if err != nil {
+		common_logger.LogError("Session response error:", err)
+		return
+	}
+
+	rspData := buf.Bytes()
+	_, err = this.conn.Write(rspData)
+	if err != nil {
+		common_logger.LogError("Session response error:", err)
+		return
+	}
+}
+
+func (this *Session) Ping() error {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, uint32(1+1))
+	if err != nil {
+		return err
+	}
+	buf.WriteByte(byte(Ping))
+	buf.WriteByte(0)
+
+	err = this.Write(buf.Bytes())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (this *Session) pong(serial byte) error {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, uint32(1+1))
+	if err != nil {
+		return err
+	}
+	buf.WriteByte(byte(Pong))
+	buf.WriteByte(serial)
+
+	err = this.Write(buf.Bytes())
+	return err
+}
+
+func (this *Session) elapsedSinceLastResponse() int64 {
+	return time.Now().Unix() - this.rspTime.Load()
+}
+
+func (this *Session) Stop() {
+	this.Close(true)
+}
+
+func (this *Session) IsClosed() bool {
+	return this == nil || this.closed.Load() != 0
+}
+
+func (this *Session) Close(force bool) {
+	if this.closed.Load() != 1 {
+		return
+	}
+
+	common_logger.LogError("session [%d] closed.\n", this.id)
+	this.server.OnClose(this, force)
+	this.closed.Store(1)
+}

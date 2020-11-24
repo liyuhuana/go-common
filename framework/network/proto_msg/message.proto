@@ -1,0 +1,9 @@
+syntax = "proto3";
+package proto_msg;
+
+message Message {
+    // 结果码
+    int32 result = 1;
+    // 数据
+    bytes data = 2;
+}

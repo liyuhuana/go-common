@@ -145,7 +145,7 @@ func (this *Session) dispatch(data []byte) {
 }
 
 func (this *Session) onPush(reader *bytes.Buffer, left int) {
-	var msgId uint32
+	var msgId int32
 	err := binary.Read(reader, binary.LittleEndian, &msgId)
 	if err != nil {
 		common_logger.LogError(err)
@@ -166,7 +166,7 @@ func (this *Session) onPush(reader *bytes.Buffer, left int) {
 }
 
 func (this *Session) onRequest(reader *bytes.Buffer, left int) {
-	var msgId uint32
+	var msgId int32
 	err := binary.Read(reader, binary.LittleEndian, &msgId)
 	if err != nil {
 		common_logger.LogError(err)
@@ -183,7 +183,16 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 		return
 	}
 
-	this.server.OnRequest(this, msgId, body)
+	rspMsgId, rspData := this.server.OnRequest(this, msgId, body)
+	if rspData == nil {
+		common_logger.LogError("OnRequest returns nil!")
+		return
+	}
+
+	err = this.response(rspMsgId, rspData)
+	if err != nil {
+		common_logger.LogError("Session response error:", err)
+	}
 }
 
 func (this *Session) onResponse(reader *bytes.Buffer, left int) {
@@ -258,27 +267,28 @@ func (this *Session) Write(data []byte) error {
 	return err
 }
 
-func (this *Session) Response(msgId uint32, msgData []byte) {
+func (this *Session) response(msgId int32, msgData []byte) error {
 	buf := new(bytes.Buffer)
 	err := binary.Write(buf, binary.LittleEndian, uint32(1+definition.UInt32ByteLen.Int()+len(msgData)))
 	if err != nil {
-		common_logger.LogError("Session response error:", err)
-		return
+		return err
 	}
 
 	buf.WriteByte(byte(Response))
 	err = binary.Write(buf, binary.LittleEndian, msgId)
 	if err != nil {
-		common_logger.LogError("Session response error:", err)
-		return
+		return err
+	}
+	if len(msgData) > 0 {
+		buf.Write(msgData)
 	}
 
 	rspData := buf.Bytes()
 	_, err = this.conn.Write(rspData)
 	if err != nil {
-		common_logger.LogError("Session response error:", err)
-		return
+		return err
 	}
+	return nil
 }
 
 func (this *Session) Ping() error {

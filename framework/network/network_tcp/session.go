@@ -84,17 +84,17 @@ func (this *Session) split(data []byte, atEOF bool) (advance int, token []byte, 
 	}
 
 	if this.bodyLen == 0 {
-		int32Size := definition.UInt32ByteLen.Int()
-		if dataLen < int32Size {
+		uint32Size := definition.UInt32ByteLen.Int()
+		if dataLen < uint32Size {
 			return 0, nil, nil
 		}
 
-		this.bodyLen = binary.LittleEndian.Uint32(data[offset:int32Size])
-		dataLen -= int32Size
-		offset += int32Size
+		this.bodyLen = binary.LittleEndian.Uint32(data[offset:uint32Size])
+		dataLen -= uint32Size
+		offset += uint32Size
 
 		if dataLen < int(this.bodyLen) {
-			return int32Size, nil, nil
+			return uint32Size, nil, nil
 		}
 	} else if dataLen < int(this.bodyLen) {
 		return 0, nil, nil
@@ -107,18 +107,12 @@ func (this *Session) split(data []byte, atEOF bool) (advance int, token []byte, 
 func (this *Session) dispatch(data []byte) {
 	atomic.StoreInt64(&this.rspTime, time.Now().Unix())
 
-	if len(data) < 2 {
+	if len(data) < 1 {
 		return
 	}
 
 	reader := bytes.NewBuffer(data)
-	//_, err := reader.ReadByte() // first byte is length of buffer data
-	//if err != nil {
-	//	this.Close(false)
-	//	common_logger.LogError(err)
-	//	return
-	//}
-
+	// read pattern
 	pattern, err := reader.ReadByte()
 	if err != nil {
 		this.Close(false)
@@ -128,7 +122,7 @@ func (this *Session) dispatch(data []byte) {
 
 	MonitorInst().IncrRead(1)
 
-	left := len(data) - 2
+	left := len(data) - 1
 	switch Pattern(pattern) {
 	case Push:
 		this.onPush(reader, left)
@@ -177,7 +171,6 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 		return
 	}
 
-	left -= definition.UInt32ByteLen.Int()
 	body := make([]byte, left)
 	n, err := reader.Read(body)
 	if n != left || err != nil {

@@ -84,16 +84,17 @@ func (this *Session) split(data []byte, atEOF bool) (advance int, token []byte, 
 	}
 
 	if this.bodyLen == 0 {
-		if dataLen < 2 {
+		int32Size := definition.UInt32ByteLen.Int()
+		if dataLen < int32Size {
 			return 0, nil, nil
 		}
 
-		this.bodyLen = binary.LittleEndian.Uint32(data[offset:2])
-		dataLen -= 2
-		offset += 2
+		this.bodyLen = binary.LittleEndian.Uint32(data[offset:int32Size])
+		dataLen -= int32Size
+		offset += int32Size
 
 		if dataLen < int(this.bodyLen) {
-			return 2, nil, nil
+			return int32Size, nil, nil
 		}
 	} else if dataLen < int(this.bodyLen) {
 		return 0, nil, nil

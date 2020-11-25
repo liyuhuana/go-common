@@ -52,10 +52,6 @@ func (d *Dispatcher) OnRequest(session *network_tcp.Session, msgId int32, msgDat
 
 func (d *Dispatcher) onMessage(session *network_tcp.Session, msgId int32, msgData[] byte) (int32, int32, []byte) {
 	playerId := network_mapping.Inst().Get(session.ID())
-	if playerId.IsEmpty() {
-		return 0, -1, nil
-	}
-
 	rspMsgId, result, rspData := d.nDispatchFunc(session, msgId, playerId, msgData)
 	return rspMsgId, result, rspData
 }

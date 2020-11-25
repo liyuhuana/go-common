@@ -182,11 +182,7 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 	}
 
 	rspMsgId, result, rspData := this.server.OnRequest(this, msgId, body)
-	if rspData == nil {
-		common_logger.LogError("OnRequest returns nil!")
-		return
-	}
-
+	// start response
 	err = this.response(rspMsgId, result, rspData)
 	if err != nil {
 		common_logger.LogError("Session response error:", err)

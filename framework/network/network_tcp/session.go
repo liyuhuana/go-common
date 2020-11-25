@@ -275,10 +275,10 @@ func (this *Session) response(msgId, result int32, msgData []byte) error {
 	}
 
 	// write msg type
-	err = buf.WriteByte(byte(Response))
-	if err != nil {
-		return err
-	}
+	//err = buf.WriteByte(byte(Response))
+	//if err != nil {
+	//	return err
+	//}
 
 	// write msgId
 	err = binary.Write(buf, binary.LittleEndian, msgId)

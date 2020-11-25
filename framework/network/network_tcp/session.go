@@ -112,12 +112,12 @@ func (this *Session) dispatch(data []byte) {
 	}
 
 	reader := bytes.NewBuffer(data)
-	_, err := reader.ReadByte() // first byte is length of buffer data
-	if err != nil {
-		this.Close(false)
-		common_logger.LogError(err)
-		return
-	}
+	//_, err := reader.ReadByte() // first byte is length of buffer data
+	//if err != nil {
+	//	this.Close(false)
+	//	common_logger.LogError(err)
+	//	return
+	//}
 
 	pattern, err := reader.ReadByte()
 	if err != nil {

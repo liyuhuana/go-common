@@ -171,6 +171,7 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 		return
 	}
 
+	left -= definition.Int32ByteLen.Int()
 	body := make([]byte, left)
 	n, err := reader.Read(body)
 	if n != left || err != nil {

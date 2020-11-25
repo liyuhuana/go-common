@@ -21,7 +21,7 @@ type Session struct {
 	conn   net.Conn
 	server *Server
 
-	bodyLen uint16
+	bodyLen uint32
 	closed  int32 // 0:open 1:closed
 	rspTime int64
 
@@ -88,7 +88,7 @@ func (this *Session) split(data []byte, atEOF bool) (advance int, token []byte, 
 			return 0, nil, nil
 		}
 
-		this.bodyLen = binary.LittleEndian.Uint16(data[offset:2])
+		this.bodyLen = binary.LittleEndian.Uint32(data[offset:2])
 		dataLen -= 2
 		offset += 2
 

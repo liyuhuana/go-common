@@ -265,16 +265,16 @@ func (this *Session) Write(data []byte) error {
 func (this *Session) response(msgId, result int32, msgData []byte) error {
 	buf := new(bytes.Buffer)
 	int32Size := definition.UInt32ByteLen.Int()
-	err := binary.Write(buf, binary.LittleEndian, uint32(int32Size+int32Size+len(msgData)))
+	err := binary.Write(buf, binary.LittleEndian, uint32(1+int32Size+int32Size+len(msgData)))
 	if err != nil {
 		return err
 	}
 
-	// write msg type
-	//err = buf.WriteByte(byte(Response))
-	//if err != nil {
-	//	return err
-	//}
+	//write msg type
+	err = buf.WriteByte(byte(Response))
+	if err != nil {
+		return err
+	}
 
 	// write msgId
 	err = binary.Write(buf, binary.LittleEndian, msgId)

@@ -1,4 +1,4 @@
-package configutil
+package config_util
 
 import (
 	"crypto/tls"

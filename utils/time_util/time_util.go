@@ -76,3 +76,8 @@ func GetNextDayZeroTs() int64 {
 		AddDate(0, 0, 1).Unix()
 	return ts
 }
+
+// 时间字符串转为本地时间
+func ParseTimeInLocal(timeStr string) (time.Time, error) {
+	return time.ParseInLocation("2006-01-02 15:04:05", timeStr, time.Local)
+}

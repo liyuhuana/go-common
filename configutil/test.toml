@@ -1,0 +1,9 @@
+
+[service]
+   GameId=100816
+   GroupId=11
+
+
+[redis]
+   Addr="127.0.0.1:6389"
+   Db=0

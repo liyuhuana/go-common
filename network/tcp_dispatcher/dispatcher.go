@@ -1,10 +1,11 @@
 package tcp_dispatcher
 
 import (
-	"github.com/liyuhuana/go-common/definition"
-	"github.com/liyuhuana/go-common/framework/network/network_mapping"
-	"github.com/liyuhuana/go-common/framework/network/network_tcp"
 	"sync"
+
+	"github.com/liyuhuana/go-common/definition"
+	"github.com/liyuhuana/go-common/network/network_mapping"
+	"github.com/liyuhuana/go-common/network/network_tcp"
 )
 
 type DispatchFunc func(*network_tcp.Session, int32, definition.PlayerId, []byte) (int32, int32, []byte)

@@ -302,18 +302,31 @@ func (this *Session) response(msgId, result int32, msgData []byte) error {
 	return nil
 }
 
-func (this *Session) Push(data []byte) error {
+func (this *Session) Push(msgId int32, data []byte) error {
 	if data == nil || len(data) == 0 {
 		return errors.New("push data is empty")
 	}
 
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, uint32(1+len(data)))
+	int32Size := definition.Int32ByteLen.Int()
+	err := binary.Write(buf, binary.LittleEndian, uint32(1+int32Size+len(data)))
 	if err != nil {
 		return err
 	}
 
-	buf.WriteByte(byte(Push))
+	// write msg type
+	err = buf.WriteByte(byte(Push))
+	if err != nil {
+		return err
+	}
+
+	// write msg id
+	err = binary.Write(buf, binary.LittleEndian, msgId)
+	if err != nil {
+		return err
+	}
+
+	// write msg data
 	_, err = buf.Write(data)
 	if err != nil {
 		return err

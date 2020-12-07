@@ -105,6 +105,7 @@ func (this *Session) split(data []byte, atEOF bool) (advance int, token []byte, 
 	}
 	advance = int(this.bodyLen) + offset
 	this.bodyLen = 0
+	common_logger.LogInfo("offset:", offset, "advance:", advance, "data:", data)
 	return advance, data[offset:advance], nil
 }
 

@@ -94,7 +94,11 @@ func (this *Session) split(data []byte, atEOF bool) (advance int, token []byte, 
 		offset += uint32Size
 
 		if dataLen < int(this.bodyLen) {
-			return 2, nil, nil
+			if offset <= uint32Size {
+				return uint32Size, nil, nil
+			} else {
+				return 2, nil, nil
+			}
 		}
 	} else if dataLen < int(this.bodyLen) {
 		return 0, nil, nil

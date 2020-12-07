@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -236,7 +237,7 @@ func (this *Session) onPong(reader *bytes.Buffer) {
 
 }
 
-func (this *Session) Write(data []byte) error {
+func (this *Session) write(data []byte) error {
 	if this.IsClosed() {
 		return fmt.Errorf("session %d already closed", this.ID())
 	}
@@ -301,6 +302,30 @@ func (this *Session) response(msgId, result int32, msgData []byte) error {
 	return nil
 }
 
+func (this *Session) Push(data []byte) error {
+	if data == nil || len(data) == 0 {
+		return errors.New("push data is empty")
+	}
+
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, uint32(1+len(data)))
+	if err != nil {
+		return err
+	}
+
+	buf.WriteByte(byte(Push))
+	_, err = buf.Write(data)
+	if err != nil {
+		return err
+	}
+
+	err = this.write(buf.Bytes())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (this *Session) Ping() error {
 	buf := new(bytes.Buffer)
 	err := binary.Write(buf, binary.LittleEndian, uint32(1+1))
@@ -310,7 +335,7 @@ func (this *Session) Ping() error {
 	buf.WriteByte(byte(Ping))
 	buf.WriteByte(0)
 
-	err = this.Write(buf.Bytes())
+	err = this.write(buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -326,7 +351,7 @@ func (this *Session) pong(serial byte) error {
 	buf.WriteByte(byte(Pong))
 	buf.WriteByte(serial)
 
-	err = this.Write(buf.Bytes())
+	err = this.write(buf.Bytes())
 	return err
 }
 

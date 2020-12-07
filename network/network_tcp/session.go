@@ -94,18 +94,13 @@ func (this *Session) split(data []byte, atEOF bool) (advance int, token []byte, 
 		offset += uint32Size
 
 		if dataLen < int(this.bodyLen) {
-			if offset <= uint32Size {
-				return uint32Size, nil, nil
-			} else {
-				return 2, nil, nil
-			}
+			return 2, nil, nil
 		}
 	} else if dataLen < int(this.bodyLen) {
 		return 0, nil, nil
 	}
 	advance = int(this.bodyLen) + offset
 	this.bodyLen = 0
-	common_logger.LogInfo("offset:", offset, "advance:", advance, "data:", data)
 	return advance, data[offset:advance], nil
 }
 

@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-type DispatchFunc func(*network_tcp.Session, int32, definition.PlayerId, []byte) (int32, []byte)
+type DispatchFunc func(*network_tcp.Session, int32, definition.PlayerId, []byte) (int32, int32, []byte)
 
 type Dispatcher struct {
 	mux sync.Mutex
@@ -45,17 +45,17 @@ func (d *Dispatcher) OnPush(session *network_tcp.Session, msgId int32, msgData [
 	d.onMessage(session, msgId, msgData)
 }
 
-func (d *Dispatcher) OnRequest(session *network_tcp.Session, msgId int32, msgData []byte) (int32, []byte) {
-	msgId, rsp := d.onMessage(session, msgId, msgData)
-	return msgId, rsp
+func (d *Dispatcher) OnRequest(session *network_tcp.Session, msgId int32, msgData []byte) (int32, int32, []byte) {
+	msgId, result, rsp := d.onMessage(session, msgId, msgData)
+	return msgId, result, rsp
 }
 
-func (d *Dispatcher) onMessage(session *network_tcp.Session, msgId int32, msgData[] byte) (int32, []byte) {
+func (d *Dispatcher) onMessage(session *network_tcp.Session, msgId int32, msgData[] byte) (int32, int32, []byte) {
 	playerId := network_mapping.Inst().Get(session.ID())
 	if playerId.IsEmpty() {
-		return 0, nil
+		return 0, -1, nil
 	}
 
-	rspMsgId, rspData := d.nDispatchFunc(session, msgId, playerId, msgData)
-	return rspMsgId, rspData
+	rspMsgId, result, rspData := d.nDispatchFunc(session, msgId, playerId, msgData)
+	return rspMsgId, result, rspData
 }

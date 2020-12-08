@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"go.uber.org/atomic"
+	"sync/atomic"
 
 	"github.com/liyuhuana/go-common/common_logger"
 	"github.com/liyuhuana/go-common/definition"
@@ -22,8 +22,8 @@ type Session struct {
 	server *Server
 
 	bodyLen uint16
-	closed  atomic.Int32 // 0:open 1:closed
-	rspTime atomic.Int64
+	closed  int32 // 0:open 1:closed
+	rspTime int64
 
 	reqSeed int32
 	reqPool sync.Map
@@ -34,8 +34,7 @@ func newSession(id int32, server *Server, conn net.Conn) *Session {
 		id:      id,
 		server:  server,
 		conn:    conn,
-		closed:  *atomic.NewInt32(0),
-		rspTime: *atomic.NewInt64(time.Now().Unix()),
+		rspTime: time.Now().Unix(),
 	}
 	return s
 }
@@ -105,7 +104,7 @@ func (this *Session) split(data []byte, atEOF bool) (advance int, token []byte, 
 }
 
 func (this *Session) dispatch(data []byte) {
-	this.rspTime.Store(time.Now().Unix())
+	atomic.StoreInt64(&this.rspTime, time.Now().Unix())
 
 	if len(data) < 2 {
 		return
@@ -323,7 +322,7 @@ func (this *Session) pong(serial byte) error {
 }
 
 func (this *Session) elapsedSinceLastResponse() int64 {
-	return time.Now().Unix() - this.rspTime.Load()
+	return time.Now().Unix() - atomic.LoadInt64(&this.rspTime)
 }
 
 func (this *Session) Stop() {
@@ -331,15 +330,16 @@ func (this *Session) Stop() {
 }
 
 func (this *Session) IsClosed() bool {
-	return this == nil || this.closed.Load() != 0
+	return this == nil || atomic.LoadInt32(&this.closed) != 0
 }
 
 func (this *Session) Close(force bool) {
-	if this.closed.Load() != 1 {
+	if !atomic.CompareAndSwapInt32(&this.closed, 0, 1) {
 		return
 	}
 
+	this.conn.Close()
+
 	common_logger.LogError("session [%d] closed.\n", this.id)
 	this.server.OnClose(this, force)
-	this.closed.Store(1)
 }

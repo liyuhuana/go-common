@@ -52,7 +52,7 @@ func (this *Session) GetServer() *Server {
 }
 
 func (this *Session) Start() {
-	common_logger.LogInfo("session connection established. sessionID:", this.ID())
+	common_logger.LogInfo("session connection established. sessionId:", this.ID())
 
 	this.GetServer().OnOpen(this)
 
@@ -159,7 +159,8 @@ func (this *Session) onPush(reader *bytes.Buffer, left int) {
 	n, err := reader.Read(body)
 	if n != left || err != nil {
 		this.Close(false)
-		common_logger.LogError("session onPush exception, readByteLength:", n, "leftBuffLength:", left, "error:", err)
+		common_logger.LogError("session onPush exception, readByteLength:", n, "leftBuffLength:", left,
+			"error:", err)
 		return
 	}
 
@@ -180,7 +181,8 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 	n, err := reader.Read(body)
 	if n != left || err != nil {
 		this.Close(false)
-		common_logger.LogError("session onRequest exception, readByteLength:", n, "leftBuffLength:", left, "error:", err)
+		common_logger.LogError("session onRequest exception, readByteLength:", n, "leftBuffLength:", left,
+			"error:", err)
 		return
 	}
 
@@ -219,7 +221,8 @@ func (this *Session) onResponse(reader *bytes.Buffer, left int) {
 	n, err := reader.Read(body)
 	if n != left || err != nil {
 		this.Close(false)
-		common_logger.LogError("session onResponse exception, readByteLength:", n, "leftBuffLength:", left, "error:", err)
+		common_logger.LogError("session onResponse exception, readByteLength:", n, "leftBuffLength:", left,
+			"error:", err)
 		return
 	}
 }
@@ -340,6 +343,6 @@ func (this *Session) Close(force bool) {
 
 	this.conn.Close()
 
-	common_logger.LogInfo("session closed, sessionId:", this.id)
+	common_logger.LogInfo("session closed. sessionId:", this.id)
 	this.server.OnClose(this, force)
 }

@@ -38,7 +38,7 @@ func (d *Dispatcher) OnOpen(session *network_tcp.Session) {
 }
 
 func (d *Dispatcher) OnClose(session *network_tcp.Session, isForce bool) {
-
+	network_mapping.Inst().Remove(session.ID())
 }
 
 func (d *Dispatcher) OnPush(session *network_tcp.Session, msgId int32, msgData []byte) {

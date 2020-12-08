@@ -340,6 +340,6 @@ func (this *Session) Close(force bool) {
 
 	this.conn.Close()
 
-	common_logger.LogError("session [%d] closed.\n", this.id)
+	common_logger.LogInfo("session closed, sessionId:", this.id)
 	this.server.OnClose(this, force)
 }

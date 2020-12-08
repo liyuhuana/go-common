@@ -67,8 +67,10 @@ func (this *Session) scan() {
 	input.Split(this.split)
 
 	for input.Scan() {
-
+		this.dispatch(input.Bytes())
 	}
+
+	this.Close(false)
 }
 
 func (this *Session) split(data []byte, atEOF bool) (advance int, token []byte, err error) {

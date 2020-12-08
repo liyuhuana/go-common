@@ -186,13 +186,13 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 		return
 	}
 
-	rspMsgId, rspData := this.server.OnRequest(this, msgId, body)
+	rspMsgId, result, rspData := this.server.OnRequest(this, msgId, body)
 	if rspData == nil {
 		common_logger.LogError("OnRequest returns nil!")
 		return
 	}
 
-	err = this.response(rspMsgId, rspData)
+	err = this.response(rspMsgId, result, rspData)
 	if err != nil {
 		common_logger.LogError("Session response error:", err)
 	}
@@ -271,18 +271,33 @@ func (this *Session) Write(data []byte) error {
 	return err
 }
 
-func (this *Session) response(msgId int32, msgData []byte) error {
+func (this *Session) response(msgId, result int32, msgData []byte) error {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, uint32(1+definition.UInt32ByteLen.Int()+len(msgData)))
+	int32Size := definition.UInt32ByteLen.Int()
+	err := binary.Write(buf, binary.LittleEndian, uint32(1+int32Size+int32Size+len(msgData)))
 	if err != nil {
 		return err
 	}
 
-	buf.WriteByte(byte(Response))
+	// write msg type
+	err = buf.WriteByte(byte(Response))
+	if err != nil {
+		return err
+	}
+
+	// write msgId
 	err = binary.Write(buf, binary.LittleEndian, msgId)
 	if err != nil {
 		return err
 	}
+
+	// write result
+	err = binary.Write(buf, binary.LittleEndian, result)
+	if err != nil {
+		return err
+	}
+
+	// write msgData
 	if len(msgData) > 0 {
 		buf.Write(msgData)
 	}

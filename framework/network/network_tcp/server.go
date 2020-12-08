@@ -114,7 +114,7 @@ func (this *Server) OnClose(session *Session, force bool) {
 	this.handler.OnClose(session, force)
 }
 
-func (this *Server) OnRequest(session *Session, msgId int32, data []byte) (int32, []byte) {
+func (this *Server) OnRequest(session *Session, msgId int32, data []byte) (int32, int32, []byte) {
 	return this.handler.OnRequest(session, msgId, data)
 }
 

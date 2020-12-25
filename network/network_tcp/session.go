@@ -295,7 +295,7 @@ func (this *Session) response(msgId, result int32, msgData []byte) error {
 	}
 
 	rspData := buf.Bytes()
-	_, err = this.conn.Write(rspData)
+	err = this.write(rspData)
 	if err != nil {
 		return err
 	}

@@ -257,3 +257,37 @@ func TestHash_Hexists(t *testing.T) {
 
 	Del(coon,h.HashName)
 }
+
+func TestHash_Hlen(t *testing.T) {
+	p, err := newPool()
+	if err != nil {
+		t.Error("new pool err:", err)
+		return
+	}
+	conn := p.Get()
+	defer conn.Close()
+
+	var (
+		hashName = "test"
+		field = "name"
+		value = "zhangsan"
+	)
+	h := Hash{HashName:hashName}
+	err = h.Hset(conn, field, value)
+	if err != nil {
+		t.Error("hash hset err:", err)
+		return
+	}
+
+	count, err := h.Hlen(conn)
+	if err != nil || count != 1 {
+		t.Error("hash hlen err:", err, "count:", count)
+		return
+	}
+
+	err = Del(conn, h.HashName)
+	if err != nil {
+		t.Error("hash del err:", err)
+		return
+	}
+}

@@ -98,3 +98,8 @@ func (h Hash) HgetAll(conn redis.Conn) (fieldValue map[string]string, err error)
 	fieldValue, err = redis.StringMap(conn.Do(RcHgetAll, h.HashName))
 	return
 }
+
+func (h Hash) Hlen(conn redis.Conn) (count int, err error) {
+	count, err = redis.Int(conn.Do(RcHlen, h.HashName))
+	return
+}

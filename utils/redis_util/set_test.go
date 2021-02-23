@@ -7,7 +7,7 @@ import (
 )
 
 func newPool() (rpool *redis.Pool, err error) {
-	rpool = NewPool("172.13.0.53:6000", "", 15)
+	rpool = NewPool("0.0.0.0:6000", "", 15)
 	err = rpool.Get().Err()
 	return
 }

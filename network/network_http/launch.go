@@ -3,7 +3,7 @@ package network_http
 import (
 	"github.com/kataras/iris"
 
-	"github.com/liyuhuana/go-common/common_logger"
+	"github.com/liyuhuana/go-common/logs"
 )
 
 func StartHttpServer(param LaunchParam) {
@@ -23,8 +23,8 @@ func StartHttpServer(param LaunchParam) {
 	hostAddr := param.Host
 	err := app.Run(iris.Addr(hostAddr))
 	if err != nil {
-		common_logger.LogInfo("Server start fail, host [", hostAddr, "], error:", err)
+		logs.LogInfo("Server start fail, host [", hostAddr, "], error:", err)
 	} else {
-		common_logger.LogError("Server start >>> host [", hostAddr, "]")
+		logs.LogError("Server start >>> host [", hostAddr, "]")
 	}
 }

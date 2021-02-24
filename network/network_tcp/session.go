@@ -12,7 +12,7 @@ import (
 
 	"sync/atomic"
 
-	"github.com/liyuhuana/go-common/common_logger"
+	"github.com/liyuhuana/go-common/logs"
 	"github.com/liyuhuana/go-common/definition"
 	"github.com/liyuhuana/go-common/recover"
 )
@@ -53,7 +53,7 @@ func (this *Session) GetServer() *Server {
 }
 
 func (this *Session) Start() {
-	common_logger.LogInfo("session connection established. sessionId:", this.ID())
+	logs.LogInfo("session connection established. sessionId:", this.ID())
 
 	this.GetServer().OnOpen(this)
 
@@ -117,7 +117,7 @@ func (this *Session) dispatch(data []byte) {
 	pattern, err := reader.ReadByte()
 	if err != nil {
 		this.Close(false)
-		common_logger.LogError(err)
+		logs.LogError(err)
 		return
 	}
 
@@ -145,7 +145,7 @@ func (this *Session) onPush(reader *bytes.Buffer, left int) {
 	var msgId int32
 	err := binary.Read(reader, binary.LittleEndian, &msgId)
 	if err != nil {
-		common_logger.LogError(err)
+		logs.LogError(err)
 		this.Close(false)
 		return
 	}
@@ -155,7 +155,7 @@ func (this *Session) onPush(reader *bytes.Buffer, left int) {
 	n, err := reader.Read(body)
 	if n != left || err != nil {
 		this.Close(false)
-		common_logger.LogError("session onPush exception, readByteLength:", n, "leftBuffLength:", left,
+		logs.LogError("session onPush exception, readByteLength:", n, "leftBuffLength:", left,
 			"error:", err)
 		return
 	}
@@ -167,7 +167,7 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 	var msgId int32
 	err := binary.Read(reader, binary.LittleEndian, &msgId)
 	if err != nil {
-		common_logger.LogError(err)
+		logs.LogError(err)
 		this.Close(false)
 		return
 	}
@@ -177,7 +177,7 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 	n, err := reader.Read(body)
 	if n != left || err != nil {
 		this.Close(false)
-		common_logger.LogError("session onRequest exception, readByteLength:", n, "leftBuffLength:", left,
+		logs.LogError("session onRequest exception, readByteLength:", n, "leftBuffLength:", left,
 			"error:", err)
 		return
 	}
@@ -186,7 +186,7 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 	// start response
 	err = this.response(rspMsgId, result, rspData)
 	if err != nil {
-		common_logger.LogError("Session response error:", err)
+		logs.LogError("Session response error:", err)
 	}
 }
 
@@ -195,7 +195,7 @@ func (this *Session) onResponse(reader *bytes.Buffer, left int) {
 	var en int16
 	err := binary.Read(reader, binary.LittleEndian, &serial)
 	if err != nil {
-		common_logger.LogError(err)
+		logs.LogError(err)
 		this.Close(false)
 		return
 	}
@@ -203,7 +203,7 @@ func (this *Session) onResponse(reader *bytes.Buffer, left int) {
 	left -= 2
 	err = binary.Read(reader, binary.LittleEndian, &en)
 	if err != nil {
-		common_logger.LogError(err)
+		logs.LogError(err)
 		this.Close(false)
 		return
 	}
@@ -213,7 +213,7 @@ func (this *Session) onResponse(reader *bytes.Buffer, left int) {
 	n, err := reader.Read(body)
 	if n != left || err != nil {
 		this.Close(false)
-		common_logger.LogError("session onResponse exception, readByteLength:", n, "leftBuffLength:", left,
+		logs.LogError("session onResponse exception, readByteLength:", n, "leftBuffLength:", left,
 			"error:", err)
 		return
 	}
@@ -223,13 +223,13 @@ func (this *Session) onPing(reader *bytes.Buffer) {
 	serial, err := reader.ReadByte()
 	if err != nil {
 		this.Close(false)
-		common_logger.LogError(err)
+		logs.LogError(err)
 		return
 	}
 
 	err = this.pong(serial)
 	if err != nil {
-		common_logger.LogError(err)
+		logs.LogError(err)
 	}
 }
 
@@ -387,6 +387,6 @@ func (this *Session) Close(force bool) {
 
 	this.conn.Close()
 
-	common_logger.LogInfo("session closed. sessionId:", this.id)
+	logs.LogInfo("session closed. sessionId:", this.id)
 	this.server.OnClose(this, force)
 }

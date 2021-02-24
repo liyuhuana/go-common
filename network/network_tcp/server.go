@@ -7,7 +7,7 @@ import (
 
 	"go.uber.org/atomic"
 
-	"github.com/liyuhuana/go-common/common_logger"
+	"github.com/liyuhuana/go-common/logs"
 	"github.com/liyuhuana/go-common/recover"
 )
 
@@ -44,10 +44,10 @@ func (this *Server) Start() {
 	host := this.serverInfo.GetHost()
 	listener, err := net.Listen("tcp4", host)
 	if err != nil {
-		common_logger.LogError("server listen failed:", err)
+		logs.LogError("server listen failed:", err)
 		return
 	}
-	common_logger.LogInfo("server start running, tcp address: [", host, "]")
+	logs.LogInfo("server start running, tcp address: [", host, "]")
 
 	this.listener = listener
 
@@ -56,7 +56,7 @@ func (this *Server) Start() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			common_logger.LogError(err)
+			logs.LogError(err)
 			continue
 		}
 
@@ -82,13 +82,13 @@ func (this *Server) keepAlive() {
 				} else if lastRspElpase > 30 {
 					err := s.Ping()
 					if err != nil {
-						common_logger.LogError(err)
+						logs.LogError(err)
 					}
 				}
 				return true
 			})
 		case <-this.keepAliveSignal:
-			common_logger.LogInfo("Server keep alive stopped!")
+			logs.LogInfo("Server keep alive stopped!")
 		}
 	}
 }
@@ -134,8 +134,8 @@ func (this *Server) Stop() {
 
 	err := this.listener.Close()
 	if err != nil {
-		common_logger.LogError("Server listener close error:", err)
+		logs.LogError("Server listener close error:", err)
 	}
 
-	common_logger.LogInfo("Server stopped!")
+	logs.LogInfo("Server stopped!")
 }

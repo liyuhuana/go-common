@@ -1,4 +1,4 @@
-package common_logger
+package logs
 
 import "fmt"
 
@@ -12,7 +12,7 @@ func Init(logInfo, logWarn, logError func(...interface{})) {
 	nLogError = logError
 }
 
-func LogInfo(args...interface{}) {
+func Info(args...interface{}) {
 	if nLogInfo != nil {
 		nLogInfo(args...)
 	} else {
@@ -20,7 +20,7 @@ func LogInfo(args...interface{}) {
 	}
 }
 
-func LogWarn(args...interface{}) {
+func Warn(args...interface{}) {
 	if nLogWarn != nil {
 		nLogWarn(args...)
 	} else {
@@ -28,7 +28,7 @@ func LogWarn(args...interface{}) {
 	}
 }
 
-func LogError(args...interface{}) {
+func Error(args...interface{}) {
 	if nLogError != nil {
 		nLogError(args...)
 	} else {

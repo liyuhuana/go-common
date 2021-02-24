@@ -19,6 +19,10 @@ func initConsoleLog() {
 }
 
 func logConsoleInfo(level log4go.Level, args...interface{}) {
+	if consoleLog == nil {
+		return
+	}
+
 	r := &log4go.LogRecord{
 		Level:   level,
 		Created: time.Now(),

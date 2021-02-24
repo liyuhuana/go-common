@@ -23,8 +23,8 @@ func StartHttpServer(param LaunchParam) {
 	hostAddr := param.Host
 	err := app.Run(iris.Addr(hostAddr))
 	if err != nil {
-		logs.LogInfo("Server start fail, host [", hostAddr, "], error:", err)
+		logs.Info("Server start fail, host [", hostAddr, "], error:", err)
 	} else {
-		logs.LogError("Server start >>> host [", hostAddr, "]")
+		logs.Error("Server start >>> host [", hostAddr, "]")
 	}
 }

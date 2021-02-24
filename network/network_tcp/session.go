@@ -53,7 +53,7 @@ func (this *Session) GetServer() *Server {
 }
 
 func (this *Session) Start() {
-	logs.LogInfo("session connection established. sessionId:", this.ID())
+	logs.Info("session connection established. sessionId:", this.ID())
 
 	this.GetServer().OnOpen(this)
 
@@ -117,7 +117,7 @@ func (this *Session) dispatch(data []byte) {
 	pattern, err := reader.ReadByte()
 	if err != nil {
 		this.Close(false)
-		logs.LogError(err)
+		logs.Error(err)
 		return
 	}
 
@@ -145,7 +145,7 @@ func (this *Session) onPush(reader *bytes.Buffer, left int) {
 	var msgId int32
 	err := binary.Read(reader, binary.LittleEndian, &msgId)
 	if err != nil {
-		logs.LogError(err)
+		logs.Error(err)
 		this.Close(false)
 		return
 	}
@@ -155,7 +155,7 @@ func (this *Session) onPush(reader *bytes.Buffer, left int) {
 	n, err := reader.Read(body)
 	if n != left || err != nil {
 		this.Close(false)
-		logs.LogError("session onPush exception, readByteLength:", n, "leftBuffLength:", left,
+		logs.Error("session onPush exception, readByteLength:", n, "leftBuffLength:", left,
 			"error:", err)
 		return
 	}
@@ -167,7 +167,7 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 	var msgId int32
 	err := binary.Read(reader, binary.LittleEndian, &msgId)
 	if err != nil {
-		logs.LogError(err)
+		logs.Error(err)
 		this.Close(false)
 		return
 	}
@@ -177,7 +177,7 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 	n, err := reader.Read(body)
 	if n != left || err != nil {
 		this.Close(false)
-		logs.LogError("session onRequest exception, readByteLength:", n, "leftBuffLength:", left,
+		logs.Error("session onRequest exception, readByteLength:", n, "leftBuffLength:", left,
 			"error:", err)
 		return
 	}
@@ -186,7 +186,7 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 	// start response
 	err = this.response(rspMsgId, result, rspData)
 	if err != nil {
-		logs.LogError("Session response error:", err)
+		logs.Error("Session response error:", err)
 	}
 }
 
@@ -195,7 +195,7 @@ func (this *Session) onResponse(reader *bytes.Buffer, left int) {
 	var en int16
 	err := binary.Read(reader, binary.LittleEndian, &serial)
 	if err != nil {
-		logs.LogError(err)
+		logs.Error(err)
 		this.Close(false)
 		return
 	}
@@ -203,7 +203,7 @@ func (this *Session) onResponse(reader *bytes.Buffer, left int) {
 	left -= 2
 	err = binary.Read(reader, binary.LittleEndian, &en)
 	if err != nil {
-		logs.LogError(err)
+		logs.Error(err)
 		this.Close(false)
 		return
 	}
@@ -213,7 +213,7 @@ func (this *Session) onResponse(reader *bytes.Buffer, left int) {
 	n, err := reader.Read(body)
 	if n != left || err != nil {
 		this.Close(false)
-		logs.LogError("session onResponse exception, readByteLength:", n, "leftBuffLength:", left,
+		logs.Error("session onResponse exception, readByteLength:", n, "leftBuffLength:", left,
 			"error:", err)
 		return
 	}
@@ -223,13 +223,13 @@ func (this *Session) onPing(reader *bytes.Buffer) {
 	serial, err := reader.ReadByte()
 	if err != nil {
 		this.Close(false)
-		logs.LogError(err)
+		logs.Error(err)
 		return
 	}
 
 	err = this.pong(serial)
 	if err != nil {
-		logs.LogError(err)
+		logs.Error(err)
 	}
 }
 
@@ -387,6 +387,6 @@ func (this *Session) Close(force bool) {
 
 	this.conn.Close()
 
-	logs.LogInfo("session closed. sessionId:", this.id)
+	logs.Info("session closed. sessionId:", this.id)
 	this.server.OnClose(this, force)
 }

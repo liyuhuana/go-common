@@ -44,10 +44,10 @@ func (this *Server) Start() {
 	host := this.serverInfo.GetHost()
 	listener, err := net.Listen("tcp4", host)
 	if err != nil {
-		logs.LogError("server listen failed:", err)
+		logs.Error("server listen failed:", err)
 		return
 	}
-	logs.LogInfo("server start running, tcp address: [", host, "]")
+	logs.Info("server start running, tcp address: [", host, "]")
 
 	this.listener = listener
 
@@ -56,7 +56,7 @@ func (this *Server) Start() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			logs.LogError(err)
+			logs.Error(err)
 			continue
 		}
 
@@ -82,13 +82,13 @@ func (this *Server) keepAlive() {
 				} else if lastRspElpase > 30 {
 					err := s.Ping()
 					if err != nil {
-						logs.LogError(err)
+						logs.Error(err)
 					}
 				}
 				return true
 			})
 		case <-this.keepAliveSignal:
-			logs.LogInfo("Server keep alive stopped!")
+			logs.Info("Server keep alive stopped!")
 		}
 	}
 }
@@ -134,8 +134,8 @@ func (this *Server) Stop() {
 
 	err := this.listener.Close()
 	if err != nil {
-		logs.LogError("Server listener close error:", err)
+		logs.Error("Server listener close error:", err)
 	}
 
-	logs.LogInfo("Server stopped!")
+	logs.Info("Server stopped!")
 }

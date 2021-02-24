@@ -291,3 +291,35 @@ func TestHash_Hlen(t *testing.T) {
 		return
 	}
 }
+
+func TestExistHash(t *testing.T) {
+	p, err := newPool()
+	if err != nil {
+		t.Error("new pool err:", err)
+		return
+	}
+	conn := p.Get()
+	defer conn.Close()
+
+	var (
+		hashName = "test"
+		field = "name"
+		value = "zhangsan"
+	)
+
+	h := Hash{HashName:hashName}
+	err = h.Hset(conn, field, value)
+
+	err = h.Hset(conn, field, value)
+	if err != nil {
+		t.Fatal("failed to set hash value,err:", err)
+	}
+	v, err := ExistKv(conn, hashName)
+	if err != nil || !v {
+		t.Fatal("failed to get hash value,err:", err)
+	}
+	err = h.Hdel(conn, field)
+	if err != nil {
+		t.Fatal("fail to del hash value, err:", err)
+	}
+}

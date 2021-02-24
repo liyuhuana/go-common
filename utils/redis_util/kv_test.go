@@ -1,6 +1,8 @@
 package redis_util
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestSetKv_Get_Del(t *testing.T) {
 	p, err := newPool()
@@ -75,5 +77,31 @@ func TestExpire_TTL_Exist(t *testing.T) {
 	exist,err= ExistKv(coon,key)
 	if err!=nil || exist{
 		t.Fatal("failed to exist key,err:",err,exist)
+	}
+}
+
+func TestExistKv(t *testing.T) {
+	p, err := newPool()
+	if err != nil {
+		t.Error("new pool err:", err)
+		return
+	}
+	conn := p.Get()
+	defer conn.Close()
+
+	key := "hello"
+	value := "world"
+
+	err = SetKv(conn, key, value)
+	if err != nil {
+		t.Fatal("failed to set key value,err:", err)
+	}
+	v, err := ExistKv(conn, key)
+	if err != nil || !v {
+		t.Fatal("failed to get key value,err:", err)
+	}
+	err = Del(conn, key)
+	if err != nil {
+		t.Fatal("fail to del key value, err:", err)
 	}
 }

@@ -5,26 +5,26 @@ import (
 	"strconv"
 )
 
-type PlayerId int64
+type PlayerId int32
 
 const (
 	EmptyPlayerId PlayerId = -1
 )
 
 func ConvertStringToPlayerId(str string) PlayerId {
-	id, err := strconv.ParseInt(str, 10, 64)
+	id, err := strconv.ParseInt(str, 10, 32)
 	if err != nil {
 		return EmptyPlayerId
 	}
 	return PlayerId(id)
 }
 
-func (id PlayerId) Int64() int64 {
-	return int64(id)
+func (id PlayerId) Int32() int32 {
+	return int32(id)
 }
 
 func (id PlayerId) String() string {
-	return math_util.Int64ToStr(id.Int64())
+	return math_util.Int32ToStr(id.Int32())
 }
 
 func (id PlayerId) IsEmpty() bool {

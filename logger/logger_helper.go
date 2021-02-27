@@ -23,7 +23,7 @@ func Info(args ...interface{}) {
 		fmt.Println("Logger Info fail, logger is nil, args:", args)
 		return
 	}
-	nLogger.Critical(args...)
+	nLogger.Info(args...)
 	logConsoleInfo(log4go.INFO, args...)
 }
 
@@ -41,7 +41,7 @@ func Error(args ...interface{}) {
 		fmt.Println("Logger Error fail, logger is nil, args:", args)
 		return
 	}
-	nLogger.Critical(args...)
+	nLogger.Error(args...)
 	logConsoleInfo(log4go.ERROR, args...)
 }
 

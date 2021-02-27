@@ -15,6 +15,8 @@ func Init(logger *Logger) {
 		return
 	}
 
+	log4go.FuncCallDepth = 4
+
 	nLogger = logger
 }
 

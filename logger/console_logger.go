@@ -16,7 +16,6 @@ func init() {
 func initConsoleLog() {
 	consoleLog = log4go.NewConsoleLogWriter()
 	consoleLog.SetFormat("[%T] [%L] %M ")
-	log4go.FuncCallDepth = 4
 }
 
 func logConsoleInfo(level log4go.Level, args...interface{}) {

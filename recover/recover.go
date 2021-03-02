@@ -46,7 +46,7 @@ func DumpStack() {
 		}
 	}
 
-	name := path.Join(logPath, fmt.Sprintf("%s.log", time.Now().Format("2006-01-02.15:04:05.000")))
+	name := path.Join(logPath, fmt.Sprintf("%s.log", time.Now().Format("2006-01-02.15-04-05.000")))
 	file, err := os.Create(name)
 	if err != nil {
 		log.Fatalln(err)

@@ -8,11 +8,16 @@ import (
 	"github.com/liyuhuana/go-common/network/network_tcp"
 )
 
-type DispatchFunc func(*network_tcp.Session, int32, definition.PlayerId, []byte) (int32, int32, []byte)
+
+type IHandler interface {
+	OnOpen(*network_tcp.Session)
+	OnClose(definition.PlayerId)
+	OnMessage(*network_tcp.Session, int32, definition.PlayerId, []byte) (int32, int32, []byte)
+}
 
 type Dispatcher struct {
 	mux sync.Mutex
-	nDispatchFunc DispatchFunc
+	nHandler IHandler
 }
 
 var (
@@ -24,21 +29,22 @@ func Inst() *Dispatcher {
 	once.Do(func() {
 		inst = &Dispatcher{
 			mux:          sync.Mutex{},
-			nDispatchFunc: nil,
 		}
 	})
 	return inst
 }
 
-func (d *Dispatcher) Init(f DispatchFunc) {
-	d.nDispatchFunc = f
+func (d *Dispatcher) Init(h IHandler) {
+	d.nHandler = h
 }
 
 func (d *Dispatcher) OnOpen(session *network_tcp.Session) {
-
+	d.nHandler.OnOpen(session)
 }
 
 func (d *Dispatcher) OnClose(session *network_tcp.Session, isForce bool) {
+	playerId := network_mapping.Inst().Get(session.ID())
+	d.nHandler.OnClose(playerId)
 	network_mapping.Inst().Remove(session.ID())
 }
 
@@ -53,6 +59,6 @@ func (d *Dispatcher) OnRequest(session *network_tcp.Session, msgId int32, msgDat
 
 func (d *Dispatcher) onMessage(session *network_tcp.Session, msgId int32, msgData[] byte) (int32, int32, []byte) {
 	playerId := network_mapping.Inst().Get(session.ID())
-	rspMsgId, result, rspData := d.nDispatchFunc(session, msgId, playerId, msgData)
+	rspMsgId, result, rspData := d.nHandler.OnMessage(session, msgId, playerId, msgData)
 	return rspMsgId, result, rspData
 }

@@ -7,7 +7,7 @@ import (
 
 type SessionToUser struct {
 	mux sync.RWMutex
-	items map[int32]definition.Uid
+	items map[int32]definition.UserId
 }
 
 var (
@@ -19,23 +19,23 @@ func Inst() *SessionToUser {
 	once.Do(func() {
 		inst = &SessionToUser{
 			mux:   sync.RWMutex{},
-			items: make(map[int32]definition.Uid),
+			items: make(map[int32]definition.UserId),
 		}
 	})
 	return inst
 }
 
-func (this *SessionToUser) Get(sessionId int32) definition.Uid {
+func (this *SessionToUser) Get(sessionId int32) definition.UserId {
 	this.mux.RLock()
 	defer this.mux.RUnlock()
 
 	if playerId, ok := this.items[sessionId]; ok {
 		return playerId
 	}
-	return definition.EmptyUid
+	return definition.EmptyUserId
 }
 
-func (this *SessionToUser) Add(sessionId int32, playerId definition.Uid) {
+func (this *SessionToUser) Add(sessionId int32, playerId definition.UserId) {
 	this.mux.Lock()
 	defer this.mux.Unlock()
 

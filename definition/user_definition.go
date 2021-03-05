@@ -5,30 +5,30 @@ import (
 	"strconv"
 )
 
-type Uid int32
+type UserId int32
 
 const (
-	EmptyUid Uid = -1
+	EmptyUserId UserId = -1
 )
 
-func ConvertStringToUid(str string) Uid {
+func ConvertStringToUserId(str string) UserId {
 	id, err := strconv.ParseInt(str, 10, 32)
 	if err != nil {
-		return EmptyUid
+		return EmptyUserId
 	}
-	return Uid(id)
+	return UserId(id)
 }
 
-func (id Uid) Int32() int32 {
+func (id UserId) Int32() int32 {
 	return int32(id)
 }
 
-func (id Uid) String() string {
+func (id UserId) String() string {
 	return math_util.Int32ToStr(id.Int32())
 }
 
-func (id Uid) IsEmpty() bool {
-	return id == EmptyUid
+func (id UserId) IsEmpty() bool {
+	return id == EmptyUserId
 }
 
 type UserType int32

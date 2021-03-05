@@ -11,8 +11,8 @@ import (
 
 type IHandler interface {
 	OnOpen(*network_tcp.Session)
-	OnClose(definition.PlayerId)
-	OnMessage(*network_tcp.Session, int32, definition.PlayerId, []byte) (int32, int32, []byte)
+	OnClose(definition.Uid)
+	OnMessage(*network_tcp.Session, int32, definition.Uid, []byte) (int32, int32, []byte)
 }
 
 type Dispatcher struct {

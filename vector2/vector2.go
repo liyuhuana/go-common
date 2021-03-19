@@ -9,6 +9,11 @@ type Vector2 struct {
 	X, Y float64
 }
 
+var (
+	Zero = Vector2{X: 0, Y: 0}
+	One  = Vector2{X: 1, Y: 1}
+)
+
 func (this Vector2) String() string {
 	strX := strconv.FormatFloat(this.X, 'f', 3, 64)
 	strY := strconv.FormatFloat(this.Y, 'f', 3, 64)

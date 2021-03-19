@@ -9,6 +9,11 @@ type Vector3 struct {
 	X, Y, Z float64
 }
 
+var (
+	Zero = Vector3{X: 0, Y: 0, Z: 0}
+	One  = Vector3{X: 1, Y: 1, Z: 1}
+)
+
 func (this Vector3) String() string {
 	strX := strconv.FormatFloat(this.X, 'f', 3, 64)
 	strY := strconv.FormatFloat(this.Y, 'f', 3, 64)

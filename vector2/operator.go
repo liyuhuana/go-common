@@ -9,6 +9,20 @@ func New(x, y float64) Vector2 {
 	}
 }
 
+func NewInt32(x, y int32) Vector2 {
+	return Vector2{
+		X: float64(x),
+		Y: float64(y),
+	}
+}
+
+func NewInt64(x, y int64) Vector2 {
+	return Vector2{
+		X: float64(x),
+		Y: float64(y),
+	}
+}
+
 func Add(v1, v2 Vector2) Vector2 {
 	return v1.Add(v2)
 }

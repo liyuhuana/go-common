@@ -29,6 +29,10 @@ func (this *Vector2) Get() (float64, float64) {
 	return this.X, this.Y
 }
 
+func (this *Vector2) GetInt32() (int32, int32) {
+	return int32(this.X), int32(this.Y)
+}
+
 func (this *Vector2) Clone() Vector2 {
 	return Vector2{
 		X: this.X,

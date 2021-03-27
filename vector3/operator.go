@@ -10,6 +10,14 @@ func New(x, y, z float64) Vector3 {
 	}
 }
 
+func NewFloat32(x, y, z float32) Vector3 {
+	return Vector3{
+		X: float64(x),
+		Y: float64(y),
+		Z: float64(z),
+	}
+}
+
 func NewInt32(x, y, z int32) Vector3 {
 	return Vector3{
 		X: float64(x),

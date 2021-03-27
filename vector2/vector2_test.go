@@ -36,3 +36,9 @@ func TestDistance(t *testing.T) {
 	v2 := New(2, 2)
 	fmt.Println(Distance(v1, v2))
 }
+
+func TestEqual(t *testing.T) {
+	v1 := New(1, 1)
+	v2 := New(1, 1.1)
+	fmt.Println(Equal(v1, v2))
+}

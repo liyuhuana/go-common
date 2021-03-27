@@ -50,6 +50,10 @@ func Div(v1, v2 Vector3) Vector3 {
 	return v1.Div(v2)
 }
 
+func Equal(v1, v2 Vector3) bool {
+	return (math.Pow(v1.X-v2.X, 2) + math.Pow(v1.Y-v2.Y, 2) + math.Pow(v1.Z-v2.Z, 2)) < 0.000000001
+}
+
 func Distance(v1, v2 Vector3) float64 {
-	return math.Sqrt(math.Pow(v1.X-v2.X, 2)+math.Pow(v1.Y - v2.Y, 2)+math.Pow(v1.Z-v2.Z, 2))
+	return math.Sqrt(math.Pow(v1.X-v2.X, 2) + math.Pow(v1.Y-v2.Y, 2) + math.Pow(v1.Z-v2.Z, 2))
 }

@@ -34,6 +34,10 @@ func (this *Vector3) GetInt32() (int32, int32, int32) {
 	return int32(this.X), int32(this.Y), int32(this.Z)
 }
 
+func (this *Vector3) GetFloat32() (float32, float32, float32) {
+	return float32(this.X), float32(this.Y), float32(this.Z)
+}
+
 func (this *Vector3) Clone() Vector3 {
 	return Vector3{
 		X: this.X,

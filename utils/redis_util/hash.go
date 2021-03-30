@@ -73,8 +73,6 @@ func (h Hash) Hmget(conn redis.Conn, fields ...string) (fieldValue map[string]st
 	return
 }
 
-
-
 func (h Hash) HsetNx(conn redis.Conn, field, value interface{}) (sucess bool, err error) {
 	v, err := redis.Int64(conn.Do(RcHsetNx, h.HashName, field, value))
 	//如果返回值为1，则field原来不存在，现在设置成功

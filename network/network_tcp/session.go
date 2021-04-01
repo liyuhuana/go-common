@@ -52,9 +52,7 @@ func (this *Session) GetServer() *Server {
 }
 
 func (this *Session) Start() {
-	logger.Info("session connection established. sessionId:", this.ID())
-
-	this.GetServer().OnOpen(this)
+	this.server.OnOpen(this)
 
 	go this.scan()
 }

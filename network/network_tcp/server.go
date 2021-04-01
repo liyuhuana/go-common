@@ -105,6 +105,8 @@ func (this *Server) OnOpen(session *Session) {
 	this.sessionCnt.Add(1)
 
 	this.handler.OnOpen(session)
+
+	logger.Info("Session connection established, newSessionId:", session.ID(), "totalSession:", this.sessionCnt.Load())
 }
 
 func (this *Server) OnClose(session *Session, force bool) {

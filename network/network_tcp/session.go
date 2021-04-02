@@ -249,14 +249,16 @@ func (this *Session) write(data []byte) error {
 	n, err := this.conn.Write(data)
 	dataLen := len(data)
 	if n != dataLen {
-		return fmt.Errorf("session write error => write:%d expected:%d", n, dataLen)
-	}
-	if err != nil {
-		this.Close(false)
-		return err
+		if err != nil {
+			err = fmt.Errorf("session write error => %v", err)
+			this.Close(false)
+		} else {
+			err = fmt.Errorf("session write error => write:%d expected:%d", n, dataLen)
+		}
+	} else {
+		MonitorInst().IncrWrite(1)
 	}
 
-	MonitorInst().IncrWrite(1)
 	return err
 }
 
@@ -382,8 +384,11 @@ func (this *Session) Close(force bool) {
 		return
 	}
 
-	this.conn.Close()
+	err := this.conn.Close()
+	if err != nil {
+		logger.Error("Session close fail, sessionId:", this.ID(), "err:", err)
+		return
+	}
 
-	logger.Info("session closed. sessionId:", this.id)
 	this.server.OnClose(this, force)
 }

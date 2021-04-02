@@ -114,6 +114,8 @@ func (this *Server) OnClose(session *Session, force bool) {
 	this.sessionCnt.Add(-1)
 
 	this.handler.OnClose(session, force)
+
+	logger.Info("Session connection closed. sessionId:", session.ID(), "totalSession:", this.sessionCnt.Load())
 }
 
 func (this *Server) OnRequest(session *Session, msgId int32, data []byte) (int32, int32, []byte) {

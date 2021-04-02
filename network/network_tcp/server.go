@@ -80,10 +80,7 @@ func (this *Server) keepAlive() {
 				if lastRspElpase > 60 {
 					s.Close(true)
 				} else if lastRspElpase > 30 {
-					err := s.Ping()
-					if err != nil {
-						logger.Error(err)
-					}
+					s.Ping()
 				}
 				return true
 			})
@@ -106,7 +103,7 @@ func (this *Server) OnOpen(session *Session) {
 
 	this.handler.OnOpen(session)
 
-	logger.Info("Session connection established, newSessionId:", session.ID(), "totalSession:", this.sessionCnt.Load())
+	logger.Info("Session connection established. newSessionId:", session.ID(), " totalSession:", this.sessionCnt.Load())
 }
 
 func (this *Server) OnClose(session *Session, force bool) {
@@ -115,7 +112,7 @@ func (this *Server) OnClose(session *Session, force bool) {
 
 	this.handler.OnClose(session, force)
 
-	logger.Info("Session connection closed. sessionId:", session.ID(), "totalSession:", this.sessionCnt.Load())
+	logger.Info("Session connection closed. sessionId:", session.ID(), " totalSession:", this.sessionCnt.Load())
 }
 
 func (this *Server) OnRequest(session *Session, msgId int32, data []byte) (int32, int32, []byte) {

@@ -181,10 +181,7 @@ func (this *Session) onRequest(reader *bytes.Buffer, left int) {
 
 	rspMsgId, result, rspData := this.server.OnRequest(this, msgId, body)
 	// start response
-	err = this.response(rspMsgId, result, rspData)
-	if err != nil {
-		logger.Error("Session response error:", err)
-	}
+	this.response(rspMsgId, result, rspData)
 }
 
 func (this *Session) onResponse(reader *bytes.Buffer, left int) {
@@ -224,10 +221,7 @@ func (this *Session) onPing(reader *bytes.Buffer) {
 		return
 	}
 
-	err = this.pong(serial)
-	if err != nil {
-		logger.Error(err)
-	}
+	this.pong(serial)
 }
 
 func (this *Session) onPong(reader *bytes.Buffer) {
@@ -247,19 +241,22 @@ func (this *Session) write(data []byte) error {
 	}
 
 	n, err := this.conn.Write(data)
-	dataLen := len(data)
-	if n != dataLen {
-		if err != nil {
-			err = fmt.Errorf("session write error => %v", err)
-			this.Close(false)
-		} else {
-			err = fmt.Errorf("session write error => write:%d expected:%d", n, dataLen)
-		}
-	} else {
-		MonitorInst().IncrWrite(1)
+	if err != nil {
+		logger.Error("session write error =>", err)
+		this.Close(false)
+		return err
 	}
 
-	return err
+	dataLen := len(data)
+	if n != dataLen {
+		err = fmt.Errorf("write error => write:%d expected:%d", n, dataLen)
+		logger.Error(err)
+		return err
+	}
+
+	MonitorInst().IncrWrite(1)
+
+	return nil
 }
 
 func (this *Session) response(msgId, result int32, msgData []byte) error {
